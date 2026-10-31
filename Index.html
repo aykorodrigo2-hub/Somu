@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado Interativo AAP - Campo Técnico</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fab: {
+                            blue: '#002B49',
+                            sky: '#005A9C',
+                            gold: '#D4AF37',
+                            light: '#F0F4F8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #005A9C;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-fab-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-fab-gold text-fab-blue p-2 rounded-lg font-bold text-xl shadow">
+                    FAB
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg md:text-xl leading-tight">Simulado Interativo - Campo Técnico AAP</h1>
+                    <p class="text-xs text-slate-300">CFC / CESD - Apoio Administrativo, Logística, Manutenção e Saúde</p>
+                </div>
+            </div>
+            
+            <!-- Dashboard rápida -->
+            <div class="flex items-center space-x-6 text-sm bg-slate-800/60 px-4 py-2 rounded-xl border border-slate-700">
+                <div class="text-center">
+                    <span class="block text-xs text-slate-400">Respondidas</span>
+                    <span id="stat-answered" class="font-bold text-white text-base">0/100</span>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <span class="block text-xs text-green-400">Acertos</span>
+                    <span id="stat-correct" class="font-bold text-green-400 text-base">0</span>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <span class="block text-xs text-red-400">Erros</span>
+                    <span id="stat-wrong" class="font-bold text-red-400 text-base">0</span>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <span class="block text-xs text-fab-gold">Aproveitamento</span>
+                    <span id="stat-score" class="font-bold text-fab-gold text-base">0%</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Sidebar Navigation & Filters -->
+        <aside class="lg:col-span-1 space-y-6">
+            
+            <!-- Filter Modules -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-3">Filtrar por Módulo</h3>
+                <div class="space-y-2" id="module-filters">
+                    <button onclick="filterModule('ALL')" class="filter-btn w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition bg-fab-sky text-white" data-mod="ALL">
+                        Todos os Módulos (100 Q)
+                    </button>
+                    <button onclick="filterModule(1)" class="filter-btn w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition" data-mod="1">
+                        Módulo I - Apoio Adm. (Q1-Q25)
+                    </button>
+                    <button onclick="filterModule(2)" class="filter-btn w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition" data-mod="2">
+                        Módulo II - Log. e Eletricidade (Q26-Q50)
+                    </button>
+                    <button onclick="filterModule(3)" class="filter-btn w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition" data-mod="3">
+                        Módulo III - Mecânica e Pintura (Q51-Q75)
+                    </button>
+                    <button onclick="filterModule(4)" class="filter-btn w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition" data-mod="4">
+                        Módulo IV - Saúde e Ética (Q76-Q100)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question Grid Navigation -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Navegação</h3>
+                    <span class="text-xs text-slate-500" id="nav-count">100 questões</span>
+                </div>
+                <div id="questions-grid" class="grid grid-cols-5 gap-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                    <!-- Grid buttons generated by JS -->
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center">
+                <button onclick="resetQuiz()" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reiniciar Simulado
+                </button>
+            </div>
+        </aside>
+
+        <!-- Question Container -->
+        <section class="lg:col-span-3 space-y-6">
+            
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 relative">
+                
+                <!-- Question Header -->
+                <div class="flex flex-wrap justify-between items-center gap-2 pb-4 mb-6 border-b border-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <span id="q-badge" class="px-3 py-1 bg-fab-sky text-white text-xs font-bold rounded-full">
+                            Questão 1
+                        </span>
+                        <span id="q-module" class="text-xs font-semibold text-slate-500">
+                            Módulo I - Apoio Administrativo
+                        </span>
+                    </div>
+                    <span id="q-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 text-slate-500">
+                        Pendente
+                    </span>
+                </div>
+
+                <!-- Question Text -->
+                <div class="mb-6">
+                    <h2 id="q-text" class="text-base md:text-lg font-medium text-slate-800 leading-relaxed">
+                        Carregando questão...
+                    </h2>
+                </div>
+
+                <!-- Options List -->
+                <div id="q-options" class="space-y-3 mb-6">
+                    <!-- Dynamic Options -->
+                </div>
+
+                <!-- Feedback & Rationale Container -->
+                <div id="q-feedback" class="hidden p-5 rounded-xl border transition-all duration-300 mb-6">
+                    <div class="flex items-center gap-2 font-bold text-sm mb-2" id="feedback-title">
+                        <!-- Icon + Title -->
+                    </div>
+                    <p id="feedback-explanation" class="text-sm leading-relaxed text-slate-700">
+                        <!-- Explanation text -->
+                    </p>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button id="btn-prev" onclick="navigate(-1)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Anterior
+                    </button>
+                    
+                    <span id="pagination-text" class="text-xs text-slate-400 font-medium">
+                        1 de 100
+                    </span>
+
+                    <button id="btn-next" onclick="navigate(1)" class="px-5 py-2.5 bg-fab-sky hover:bg-fab-blue text-white font-semibold rounded-xl text-xs transition flex items-center gap-2">
+                        Próxima
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+        <p>Apostila de Instrução Técnica AAP - CFC/CESD COMAER | Simulado de Nivelamento Conceitual</p>
+    </footer>
+
+    <!-- Banco de Dados das 100 Questões -->
+    <script>
+        const questionsData = [
+            // ==================== MÓDULO I (1 - 25) ====================
+            {
+                id: 1,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Em relação à arquitetura de hardware, qual componente é responsável por executar o ciclo de instruções da máquina e processar os dados operacionais do sistema?",
+                options: [
+                    "A) Memória ROM (Read-Only Memory)",
+                    "B) Unidade Central de Processamento (CPU)",
+                    "C) Disco Rígido Magnético (HDD)",
+                    "D) Barramento de Entrada Padrão (Teclado)",
+                    "E) Placa de Som Dedicada"
+                ],
+                correct: 1,
+                rationale: "A Unidade Central de Processamento (CPU ou processador) executa o ciclo de instruções da máquina, operando em articulação direta com a placa-mãe e memórias (Item 3.1.1 da Apostila)."
+            },
+            {
+                id: 2,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Sobre as características das memórias no sistema computacional, assinale a afirmativa correta:",
+                options: [
+                    "A) A memória RAM é não volátil e mantém seus dados salvos após o desligamento elétrico.",
+                    "B) A memória ROM é de acesso aleatório e estritamente volátil.",
+                    "C) A memória RAM é volátil e abriga temporariamente dados dos programas em processamento ativo.",
+                    "D) O SSD é uma memória primária volátil de alta velocidade.",
+                    "E) A BIOS/UEFI fica armazenada na memória RAM para permitir alterações contínuas pelo usuário."
+                ],
+                correct: 2,
+                rationale: "A memória RAM (Random Access Memory) é de natureza estritamente volátil, tendo seu conteúdo apagado automaticamente com a interrupção da alimentação elétrica (Item 3.1.1)."
+            },
+            {
+                id: 3,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Considerando a progressão binária de medidas em processamento digital, 1 Megabyte (MB) equivale tecnicamente a:",
+                options: [
+                    "A) 8 bits simples.",
+                    "B) 1.024 Bytes.",
+                    "C) Em torno de 1 milhão de Bytes (1.000 KB).",
+                    "D) 1.024 Gigabytes.",
+                    "E) 1 bilhão de Bytes."
+                ],
+                correct: 2,
+                rationale: "Na tabela de escalação de medidas da apostila, 1 Megabyte (MB) corresponde a em torno de 1 milhão de Bytes ou aproximadamente 1.000 KB (Item 3.1.2)."
+            },
+            {
+                id: 4,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Qual impressora é caracterizada pelo uso de cilindro fotorreceptor, fixação de toner seco por aquecimento e elevado rendimento para grandes volumes burocráticos?",
+                options: [
+                    "A) Impressora de Impacto (Matricial)",
+                    "B) Impressora a Jato de Tinta",
+                    "C) Impressora a Laser",
+                    "D) Impressora 3D tipo FDM",
+                    "E) Plotter de recorte térmico"
+                ],
+                correct: 2,
+                rationale: "As impressoras a laser empregam cilindro fotorreceptor sensível à luz e fusão de toner elétrico seco, oferecendo alto rendimento por página em rotinas burocráticas (Item 3.1.3)."
+            },
+            {
+                id: 5,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Em uma administração militar, a impressora matricial (de impacto) ainda possui aplicação relevante para qual finalidade específica?",
+                options: [
+                    "A) Prototipagem tridimensional de peças de cabine.",
+                    "B) Impressão de fotografias de alta resolução para identificação.",
+                    "C) Impressão de formulários contínuos com vias carbonadas simultâneas.",
+                    "D) Gravação térmica em cartões magnéticos de acesso.",
+                    "E) Digitalização de documentos de alta velocidade."
+                ],
+                correct: 2,
+                rationale: "As impressoras de impacto (matriciais) mantêm relevância pela capacidade exclusiva de imprimir formulários contínuos com vias carbonadas simultâneas (guias de trânsito e almoxarifado - Item 3.1.3)."
+            },
+            {
+                id: 6,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "No teclado padrão ABNT, a tecla responsável por alternar entre os modos 'Inserir' (preservando texto) e 'Substituir' (sobrescrevendo texto) é:",
+                options: [
+                    "A) BACKSPACE",
+                    "B) CAPS LOCK",
+                    "C) INSERT",
+                    "D) ESC",
+                    "E) SHIFT"
+                ],
+                correct: 2,
+                rationale: "A tecla INSERT alterna entre os modos de entrada de texto: 'Inserir' (que preserva o texto adjacente) e 'Substituir' (que sobrescreve os caracteres - Item 3.1.3)."
+            },
+            {
+                id: 7,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Sistemas Operacionais como Windows e distribuições Linux institucionais são enquadrados na classificação de:",
+                options: [
+                    "A) Software Aplicativo de Uso Específico",
+                    "B) Software Básico",
+                    "C) Software Utilitário",
+                    "D) Compiladores de Linguagem",
+                    "E) Hardware de Controle de Periféricos"
+                ],
+                correct: 1,
+                rationale: "O Software Básico é responsável pelo gerenciamento de baixo nível dos recursos físicos do equipamento, englobando os sistemas operacionais (Item 3.1.3)."
+            },
+            {
+                id: 8,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "De acordo com a Lei de Acesso à Informação (Lei nº 12.527/2011), qual é o prazo máximo de restrição de acesso para uma informação classificada no grau ULTRASSECRETA?",
+                options: [
+                    "A) 5 anos",
+                    "B) 10 anos",
+                    "C) 15 anos",
+                    "D) 25 anos",
+                    "E) 50 anos"
+                ],
+                correct: 3,
+                rationale: "Conforme estipulado na LAI (Lei nº 12.527/2011), o grau Ultrassecreto possui prazo máximo de restrição de 25 anos (Secreta = 15 anos; Reservada = 5 anos - Item 3.2.1)."
+            },
+            {
+                id: 9,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Segundo o Decreto nº 9.758/2019 e a NSCA 5-3, qual é o único pronome de tratamento empregado nas comunicações oficiais dirigidas aos agentes públicos federais?",
+                options: [
+                    "A) Vossa Excelência",
+                    "B) Vossa Senhoria",
+                    "C) Senhor ou Senhora",
+                    "D) Ilustríssimo",
+                    "E) Doutor"
+                ],
+                correct: 2,
+                rationale: "O Decreto nº 9.758/2019 padronizou que o único pronome de tratamento empregado na comunicação oral e escrita com agentes públicos federais é 'Senhor' ou 'Senhora' (Item 3.2.2)."
+            },
+            {
+                id: 10,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "De acordo com as normas de abreviatura de datas (MD33-M-02 e NSCA 5-3), qual é o único mês do ano que deve ser SEMPRE escrito por extenso?",
+                options: [
+                    "A) Janeiro",
+                    "B) Março",
+                    "C) Maio",
+                    "D) Agosto",
+                    "E) Dezembro"
+                ],
+                correct: 2,
+                rationale: "A regra padronizada determina que o mês pode ser abreviado pelas 3 primeiras letras, sendo a única exceção o mês de maio, que deve ser sempre escrito por extenso (Item 3.2.3)."
+            },
+            {
+                id: 11,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Na indicação de números nas comunicações oficiais do COMAER, assinale a opção com a grafia correta de acordo com as regras estabelecidas:",
+                options: [
+                    "A) R$ 5600,00",
+                    "B) 127,123 (cento e vinte e sete mil)",
+                    "C) 7.123,35",
+                    "D) Ano de 1.983",
+                    "E) CEP 21.740.001"
+                ],
+                correct: 2,
+                rationale: "Os milhares são separados por ponto e as decimais por vírgula (ex: 7.123,35). A regra do ponto de milhar NÃO se aplica a anos (1983) nem a CEP (21740-001) - Item 3.2.3."
+            },
+            {
+                id: 12,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Ao realizar a indicação por extenso de valores monetários em um documento oficial, a norma exige que:",
+                options: [
+                    "A) Apenas os números inteiros sejam colocados em parênteses.",
+                    "B) A denominação da moeda seja grafada por extenso entre parênteses com a primeira letra maiúscula (ex: R$ 2.000,00 (dois mil Reais)).",
+                    "C) O símbolo monetário fique colado ao número, sem espaço (ex: R$1,25).",
+                    "D) A moeda seja escrita em caixa alta total (REAIS).",
+                    "E) O valor por extenso venha antes do numeral escrito."
+                ],
+                correct: 1,
+                rationale: "Os valores monetários são expressos em algarismos seguidos da indicação por extenso entre parênteses, com a primeira letra da moeda em maiúscula: R$ 2.000,00 (dois mil Reais) (Item 3.2.3)."
+            },
+            {
+                id: 13,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Como deve ser feita a citação formal de documentos ou atos normativos nas comunicações do COMAER?",
+                options: [
+                    "A) Lendo e escrevendo os numerais por extenso (ex: ICA cinco traço um).",
+                    "B) Conforme a grafia oficial da norma, sem ser lida por extenso (ex: ICA 5-1).",
+                    "C) Substituindo algarismos por números romanos em todas as situações.",
+                    "D) Omitindo o número e utilizando apenas o título do ato.",
+                    "E) Colocando os números entre aspas duplas."
+                ],
+                correct: 1,
+                rationale: "Ao citar documentos ou regulamentos, os números devem ser escritos conforme a grafia oficial da norma (ex: ICA 5-1 ou Portaria nº 5), sem serem lidos por extenso (Item 3.2.3)."
+            },
+            {
+                id: 14,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Qual parte do documento oficial é definida como a seção que sintetiza o assunto a fim de permitir o conhecimento rápido do objeto tratado?",
+                options: [
+                    "A) Timbre",
+                    "B) Epígrafe",
+                    "C) Preâmbulo",
+                    "D) Ementa",
+                    "E) Identificação do Signatário"
+                ],
+                correct: 3,
+                rationale: "A Ementa é a parte do documento que sintetiza o conteúdo (o assunto), além de conter referências e discriminação de anexos (Item 3.2.4)."
+            },
+            {
+                id: 15,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Na formatação de documentos oficiais, a identificação do signatário para Oficiais-Generais difere das demais autoridades porque:",
+                options: [
+                    "A) O posto e o quadro antecedem o nome por extenso.",
+                    "B) O posto e o quadro obrigatoriamente sucedem o nome por extenso.",
+                    "C) O nome do Oficial-General é escrito em letras minúsculas.",
+                    "D) Não se coloca a assinatura digital no SIGADAER.",
+                    "E) O cargo deve vir antes das Armas Nacionais."
+                ],
+                correct: 0,
+                rationale: "Nos documentos assinados por Oficiais-Generais, o posto e o quadro antecedem o nome. Para as demais autoridades, o posto, quadro/especialidade vêm após o nome (Item 3.2.4)."
+            },
+            {
+                id: 16,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "O documento administrativo utilizado internamente entre setores de uma MESMA Organização Militar (OM) para comunicar ordens ou relatar fatos é o:",
+                options: [
+                    "A) Ofício Externo",
+                    "B) Ofício Interno",
+                    "C) Ofício Circular",
+                    "D) Ofício Particular",
+                    "E) Despacho Decisório"
+                ],
+                correct: 1,
+                rationale: "O Ofício Interno é o documento utilizado para a comunicação entre setores de uma mesma Organização Militar (Item 3.2.4 - Anexo XIII)."
+            },
+            {
+                id: 17,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Quando um Ofício é encaminhado a múltiplos destinatários previamente determinados no âmbito do COMAER, ele recebe a denominação de:",
+                options: [
+                    "A) Ofício Conjunto",
+                    "B) Ofício Circular",
+                    "C) Despacho Geral",
+                    "D) Relatório de Difusão",
+                    "E) Carta Administrativa"
+                ],
+                correct: 1,
+                rationale: "Quando encaminhado a vários destinatários previamente definidos, o documento recebe a denominação de Ofício Circular (Item 3.2.4 - Anexo XV)."
+            },
+            {
+                id: 18,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Qual restrição se aplica estritamente aos Ofícios Circulares e aos documentos de Difusão Geral (DIFRAL)?",
+                options: [
+                    "A) Não podem conter assinaturas digitais.",
+                    "B) Não podem ser expedidos no âmbito do SIGADAER.",
+                    "C) Não podem inaugurar processos administrativos.",
+                    "D) Devem ser impressos exclusivamente em papel azul.",
+                    "E) Não exigem identificação do signatário."
+                ],
+                correct: 2,
+                rationale: "Os Ofícios Circulares e de Difusão Geral NÃO podem inaugurar processos administrativos, a fim de preservar os princípios da unicidade e integridade documental (Item 3.2.4)."
+            },
+            {
+                id: 19,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "No Ofício Externo dirigido a uma autoridade de MESMA hierarquia ou hierarquia inferior, o fecho de cortesia padronizado deve ser:",
+                options: [
+                    "A) Respeitosamente,",
+                    "B) Cordialmente,",
+                    "C) Atenciosamente,",
+                    "D) Com estima,",
+                    "E) Saudações militares,"
+                ],
+                correct: 2,
+                rationale: "Utiliza-se 'Respeitosamente' para autoridade de hierarquia superior e 'Atenciosamente' para autoridade de mesma hierarquia ou inferior (Item 3.2.4 - Anexo XVI)."
+            },
+            {
+                id: 20,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Quando um militar necessita tratar de um assunto estritamente pessoal (como a participação em um concurso público externo), ele deve utilizar o:",
+                options: [
+                    "A) Ofício Interno",
+                    "B) Ofício Circular",
+                    "C) Ofício Particular (identificado por s/nº)",
+                    "D) Despacho Decisório",
+                    "E) Requerimento de Serviço"
+                ],
+                correct: 2,
+                rationale: "O Ofício Particular é o documento utilizado para tratar de assuntos de interesse particular do signatário, sendo identificado pela abreviatura s/nº (Item 3.2.4 - Anexo XIV)."
+            },
+            {
+                id: 21,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "No cabeçalho de um Ofício Particular, o preâmbulo deve apresentar:",
+                options: [
+                    "A) O cargo militar e a função comissionada exercida pelo militar.",
+                    "B) O nome completo do militar precedido do posto/graduação, quadro e especialidade.",
+                    "C) Apenas a sigla da seção sem identificação de nome.",
+                    "D) O vocativo 'Excelentíssimo Senhor Senhor'.",
+                    "E) O número do CPF do militar signatário."
+                ],
+                correct: 1,
+                rationale: "No Ofício Particular, em substituição ao cargo/função, consta o nome completo do signatário precedido do posto ou graduação, quadro e especialidade por extenso (Item 3.2.4)."
+            },
+            {
+                id: 22,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "O documento administrativo utilizado por autoridade competente para dar andamento a um processo, solicitando informações ou realizando encaminhamentos, é denominado:",
+                options: [
+                    "A) Ementa",
+                    "B) Despacho",
+                    "C) Certidão",
+                    "D) Portaria",
+                    "E) Parecer Técnico"
+                ],
+                correct: 1,
+                rationale: "O Despacho é o documento administrativo utilizado pela autoridade competente para dar andamento a um processo (solicitando dados ou providências) (Item 3.2.4 - Anexo X)."
+            },
+            {
+                id: 23,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Qual instrumento formal é emitido por Comandantes ou Chefes de OM com fundamentação explícita para deferir ou indeferir requerimentos administrativos?",
+                options: [
+                    "A) Ofício de Difusão Geral",
+                    "B) Despacho Decisório",
+                    "C) Ordem de Serviço Interna",
+                    "D) Parte de Ocorrência",
+                    "E) Memória de Reunião"
+                ],
+                correct: 1,
+                rationale: "O Despacho Decisório é o documento utilizado para formalizar decisões de competência de autoridades (deferindo/indeferindo processos), devendo ser fundamentado (Item 3.2.4 - Anexo XI)."
+            },
+            {
+                id: 24,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Qual é a ferramenta oficial informatizada responsável pela produção, controle e gerenciamento de documentos arquivísticos no âmbito do COMAER?",
+                options: [
+                    "A) SILOMS",
+                    "B) SIGADAER",
+                    "C) SISMA",
+                    "D) SISPAT",
+                    "E) PNI"
+                ],
+                correct: 1,
+                rationale: "O SIGADAER (Sistema Informatizado de Gestão Arquivística de Documentos da Aeronáutica) é a ferramenta responsável pela produção, controle e gestão documental do COMAER (Item 3.2.4)."
+            },
+            {
+                id: 25,
+                module: 1,
+                moduleTitle: "Módulo I - Apoio Administrativo",
+                question: "Na escrita por extenso de numerais em textos oficiais, empregam-se numerais por extenso quando constituírem:",
+                options: [
+                    "A) Mais de três palavras soltas.",
+                    "B) Uma única palavra (ex: um, dez, quinze, cem, duzentos).",
+                    "C) Qualquer número acima de 1.000.",
+                    "D) Valores percentuais acima de 50%.",
+                    "E) Códigos de identificação de processos."
+                ],
+                correct: 1,
+                rationale: "Escrevem-se por extenso os números que constituírem uma única palavra (um, dez, quinze, cem). Usam-se algarismos arábicos quando constituírem mais de uma palavra (22, 45, 110) (Item 3.2.3)."
+            },
+
+            // ==================== MÓDULO II (26 - 50) ====================
+            {
+                id: 26,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual sistema centraliza as informações de controle de estoque, alocação de horas-homem e abertura de Ordens de Serviço (OS) na logística da FAB?",
+                options: [
+                    "A) SIGADAER",
+                    "B) SILOMS",
+                    "C) ANVISA",
+                    "D) SISGAER",
+                    "E) SISMED"
+                ],
+                correct: 1,
+                rationale: "O SILOMS (Sistema Integrado de Logística de Material e de Serviços) é a base centralizadora de dados para controle de suprimento e manutenção da FAB (Item 4.1.1)."
+            },
+            {
+                id: 27,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "De acordo com a terminologia técnica do SILOMS, a definição de 'Conjunto' é:",
+                options: [
+                    "A) Menor unidade que não pode ser desmontada sem sofrer destruição.",
+                    "B) Reunião de peças que possui função específica, amparado por publicações técnicas, e que é recuperável.",
+                    "C) Reunião de peças que não tem função específica individual, sendo parte integrante de um equipamento.",
+                    "D) Qualquer material consumível de descarte rápido.",
+                    "E) Número gravado no chassi pelo fabricante."
+                ],
+                correct: 2,
+                rationale: "Conjunto é a reunião de peças que não possui função específica individual, constituindo parte integrante de um equipamento (ex: asa de aeronave) (Item 4.1.2)."
+            },
+            {
+                id: 28,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Como é denominado o número individual gravado pelo fabricante que diferencia itens de mesma espécie, identificando de forma precisa a ordem e o histórico de fabricação?",
+                options: [
+                    "A) Part Number (P/N)",
+                    "B) Serial Number (S/N)",
+                    "C) NUP de Processo",
+                    "D) Código OT",
+                    "E) Matrícula SILOMS"
+                ],
+                correct: 1,
+                rationale: "O Serial Number (S/N) é o número individual que diferencia itens de mesma espécie, permitindo rastrear a vida útil e inspeções de um componente específico (Item 4.1.2)."
+            },
+            {
+                id: 29,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual modalidade de manutenção é caracterizada por ações programadas em intervalos predeterminados para reduzir a probabilidade de falha do item?",
+                options: [
+                    "A) Manutenção Corretiva",
+                    "B) Manutenção Preventiva",
+                    "C) Manutenção Preditiva",
+                    "D) Canibalização",
+                    "E) Overhaul Reativo"
+                ],
+                correct: 1,
+                rationale: "A Manutenção Preventiva compreende ações programadas executadas em intervalos previstos para mitigar falhas (ex: troca periódica de óleo) (Item 4.1.2)."
+            },
+            {
+                id: 30,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "A retirada autorizada de uma peça de um equipamento inoperante ou baixado para instalação em outro vetor para pronto apronto é tecnicamente denominada:",
+                options: [
+                    "A) Implantação de item",
+                    "B) Canibalização / Transferência",
+                    "C) Alienação de refugo",
+                    "D) Overhaul",
+                    "E) Desinfecção de artigo"
+                ],
+                correct: 1,
+                rationale: "Canibalização é a retirada autorizada de peça de um equipamento baixado para instalação em outro com o objetivo de prontidão operacional (Item 4.1.2)."
+            },
+            {
+                id: 31,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Ao operar chaves de boca, fixas ou combinadas, qual é a postura de segurança fundamental que o técnico de apoio deve adotar para evitar lesões?",
+                options: [
+                    "A) Empurrar sempre a chave com a palma da mão aberta.",
+                    "B) Puxar a chave em sua direção, jamais empurrá-la.",
+                    "C) Aplicar prolongadores de cano em todas as chaves manuais.",
+                    "D) Utilizar martelo de aço para dar golpes de impacto no cabo da chave.",
+                    "E) Umedecer o mordente com óleo para deslizar facilmente."
+                ],
+                correct: 1,
+                rationale: "O militar deve sempre puxar a chave em sua direção e jamais empurrá-la, prevenindo lesões graves em caso de escape do mordente (Item 4.2.1)."
+            },
+            {
+                id: 32,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Em relação ao uso de torquímetros de precisão nas oficinas da FAB, é expressamente PROIBIDO:",
+                options: [
+                    "A) Medir o momento de força em libras-polegada ou Newton-metro.",
+                    "B) Utilizar o torquímetro como alavanca de afrouxamento ou deixá-lo tensionado após a jornada.",
+                    "C) Guardar o instrumento em estojos próprios.",
+                    "D) Consultar as tabelas de aperto das Ordens Técnicas.",
+                    "E) Zerar a escala antes de aplicar a medição de torque."
+                ],
+                correct: 1,
+                rationale: "É proibido utilizar o torquímetro como alavanca para afrouxar parafusos travados ou deixá-lo com mola tensionada após a utilização, sob risco de descalibração (Item 4.2.1)."
+            },
+            {
+                id: 33,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Por que se exige o uso de macetes de plástico, borracha ou bronze em vez de martelos de aço ao trabalhar em estruturas e ligas leves aeronáuticas?",
+                options: [
+                    "A) Porque martelos de aço são mais leves que macetes plásticos.",
+                    "B) Para evitar deformações plásticas no metal e impedir centelhamento em áreas com vapores.",
+                    "C) Porque macetes de bronze não desgastam a tinta da ferramenta.",
+                    "D) Para aumentar o torque das porcas estriadas.",
+                    "E) Por imposição da ANVISA para biossegurança das oficinas."
+                ],
+                correct: 1,
+                rationale: "Macetes de plástico, borracha ou bronze são empregados para evitar deformações plásticas em ligas leves e eliminar o risco de centelhamento (Item 4.2.1)."
+            },
+            {
+                id: 34,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual ferramenta possui formato de manivela e é projetada para realizar apertos e desapertos rápidos de parafusos?",
+                options: [
+                    "A) Barra de extensão",
+                    "B) Alicate de pressão",
+                    "C) Arco de velocidade",
+                    "D) Chave Reed Prince",
+                    "E) Torquímetro estalador"
+                ],
+                correct: 2,
+                rationale: "O Arco de velocidade tem formato de manivela (semelhante ao arco de pua) e é empregado para executar apertos e desapertos rápidos (Item 4.2.1 - Tabela)."
+            },
+            {
+                id: 35,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual alicate é considerado essencial para o corte limpo de arames de freno (segurança), rebites macios e contra-pinos na manutenção?",
+                options: [
+                    "A) Alicate Universal",
+                    "B) Alicate de Bico Meia-Cana",
+                    "C) Alicate de Corte Diagonal",
+                    "D) Alicate de Pressão",
+                    "E) Alicate para anéis internos"
+                ],
+                correct: 2,
+                rationale: "O alicate de corte diagonal possui mordentes curtos e lâminas em ângulo, sendo essencial para cortar arame de freno e contra-pinos (Item 4.2.1 - Tabela)."
+            },
+            {
+                id: 36,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "As Unidades de Força Terrestre (GPU - Ground Power Unit) são equipamentos de apoio de solo que fornecem às aeronaves no pátio:",
+                options: [
+                    "A) Ar comprimido para partida das turbinas.",
+                    "B) Pressão hidráulica para acionamento do leme.",
+                    "C) Energia elétrica contínua (28 V DC) ou alternada (115/200 V AC a 400 Hz).",
+                    "D) Combustível de aviação pressurizado.",
+                    "E) Oxigênio líquido medicinal."
+                ],
+                correct: 2,
+                rationale: "As GPUs são geradores móveis de solo que fornecem energia elétrica (28V DC ou 115/200V AC 400Hz) com os motores desligados (Item 4.2.2)."
+            },
+            {
+                id: 37,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual cuidado de preservação e segurança é mandatório para equipamentos EAS estacionados na área de manobra do pátio?",
+                options: [
+                    "A) Deixar os motores em marcha lenta contínua.",
+                    "B) Manter os cabos estendidos ao longo do solo.",
+                    "C) Permanecer devidamente calçados (chocks), com freios acionados e extintores afixados.",
+                    "D) Retirar os pinos de travamento de emergência.",
+                    "E) Conectar a bateria auxiliar à fuselagem do avião."
+                ],
+                correct: 2,
+                rationale: "Os EAS devem permanecer estacionados com calços (chocks), freio de estacionamento acionado, cabos recolhidos e extintores operacionais afixados (Item 4.2.2)."
+            },
+            {
+                id: 38,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "O movimento ordenado de cargas elétricas através de um condutor sob a ação de uma diferença de potencial é denominado:",
+                options: [
+                    "A) Resistência Elétrica",
+                    "B) Potência Elétrica",
+                    "C) Corrente Elétrica",
+                    "D) Campo Magnético Estático",
+                    "E) Efeito Capacitivo"
+                ],
+                correct: 2,
+                rationale: "Corrente elétrica é o fluxo ordenado de cargas elétricas (elétrons) através de um condutor, medido em Ampères (A) (Item 4.3.1)."
+            },
+            {
+                id: 39,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "De acordo com a Lei de Ohm (I = V / R), se um circuito elétrico de 24 Volts apresenta uma resistência interna de 12 Ohms, a corrente resultante será de:",
+                options: [
+                    "A) 0,5 Ampère",
+                    "B) 2 Ampères",
+                    "C) 12 Ampères",
+                    "D) 36 Ampères",
+                    "E) 288 Ampères"
+                ],
+                correct: 1,
+                rationale: "Aplicando a Lei de Ohm: I = V / R -> I = 24 / 12 = 2 Ampères (Item 4.3.2)."
+            },
+            {
+                id: 40,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "A grandeza que quantifica a energia elétrica consumida ou transformada por um equipamento por unidade de tempo é medida em:",
+                options: [
+                    "A) Volts (V)",
+                    "B) Ohms (Ω)",
+                    "C) Watts (W)",
+                    "D) Hertz (Hz)",
+                    "E) Joules por metro"
+                ],
+                correct: 2,
+                rationale: "A potência elétrica indica a quantidade de energia transformada ou consumida por tempo, cuja unidade é o Watt (W = V x I) (Item 4.3.1)."
+            },
+            {
+                id: 41,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "O fenômeno do Efeito Joule consiste na:",
+                options: [
+                    "A) Geração de indução magnética por um ímã permanente.",
+                    "B) Transformação de energia elétrica em calor devido à resistência do material.",
+                    "C) Redução do diâmetro dos elétrons em condutores de cobre.",
+                    "D) Emissão de luz fria por leds de sinalização.",
+                    "E) Acumulação de cargas estáticas no dielétrico."
+                ],
+                correct: 1,
+                rationale: "O Efeito Joule é o aquecimento produzido pela passagem da corrente elétrica através de um material que apresenta resistência (Item 4.3.2)."
+            },
+            {
+                id: 42,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Em relação aos princípios de magnetismo e eletromagnetismo, assinale a afirmativa correta:",
+                options: [
+                    "A) Polos magnéticos iguais se atraem e polos diferentes se repelem.",
+                    "B) A corrente elétrica que percorre um condutor cria ao seu redor um campo magnético.",
+                    "C) A magnetita é um exemplo de ímã artificial sintético.",
+                    "D) Geradores elétricos funcionam sem a presença de variações de campo magnético.",
+                    "E) Isolantes de borracha conduzem linhas de força magnética com alta eficiência."
+                ],
+                correct: 1,
+                rationale: "Quando a corrente elétrica percorre um condutor, surge ao seu redor um campo magnético (princípio do eletromagnetismo - Item 4.3.2)."
+            },
+            {
+                id: 43,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual dos materiais abaixo é amplamente utilizado em circuitos elétricos devido à sua baixa resistência elétrica (elevada condutividade)?",
+                options: [
+                    "A) Borracha sintética",
+                    "B) Porcelana",
+                    "C) Cobre",
+                    "D) Baquelite",
+                    "E) Vidro temperado"
+                ],
+                correct: 2,
+                rationale: "O cobre é um excelente condutor que apresenta baixa resistência elétrica à passagem de corrente (Item 4.3.3)."
+            },
+            {
+                id: 44,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual ressalva de segurança operacional é destacada na apostila para o pessoal da especialidade de Apoio (AAP) referente aos serviços elétricos?",
+                options: [
+                    "A) Estão autorizados a realizar qualquer reparo em alta tensão desde que usem luvas.",
+                    "B) O estudo do módulo NÃO habilita o militar à execução autônoma de manutenções em redes vivas ou subestações.",
+                    "C) Podem realizar substituição de transformadores sem ordem de serviço.",
+                    "D) Devem inspecionar quadros elétricos principais com ferramentas de aço carbono comuns.",
+                    "E) Apenas cabos de baixa tensão podem ser descascados com alicate de corte sem desligar o disjuntor."
+                ],
+                correct: 1,
+                rationale: "O módulo possui caráter puramente conceitual e NÃO habilita os militares de apoio à execução autônoma de intervenções elétricas, exclusivas de eletricistas qualificados (Item 4.3)."
+            },
+            {
+                id: 45,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Para o acesso seguro de mecânicos ao bocal de combustível instalado na parte superior das asas de uma aeronave, utiliza-se:",
+                options: [
+                    "A) Garfo de reboque",
+                    "B) Escada de abastecimento específica",
+                    "C) Macaco de troca de rodas",
+                    "D) Carro de transporte de motor",
+                    "E) Barra de tração"
+                ],
+                correct: 1,
+                rationale: "A escada de abastecimento facilita o acesso seguro e ergonômico aos bocais de combustível situados em áreas elevadas (Item 4.2.1 - Fotos)."
+            },
+            {
+                id: 46,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Dispositivos mecânicos aplicados temporariamente durante inspeções de solo para evitar a movimentação inadvertida de ailerons, leme e profundor são chamados de:",
+                options: [
+                    "A) Dispositivos de travamento de superfícies",
+                    "B) Torquímetros manuais",
+                    "C) Placas de circuito impresso",
+                    "D) Amortecedores oleopneumáticos",
+                    "E) Fusíveis de corte"
+                ],
+                correct: 0,
+                rationale: "Os dispositivos de travamento de superfícies travam mecanicamente os comandos de voo durante inspeções em cabos e hastes no hangar (Item 4.2.1 - Fotos)."
+            },
+            {
+                id: 47,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Qual equipamento de apoio de solo é projetado especificamente para a sustentação, içamento e substituição de turbinas e motores pesados?",
+                options: [
+                    "A) Macaco de troca de rodas",
+                    "B) Guindaste de manutenção",
+                    "C) GPU elétrica",
+                    "D) Garfo de nariz",
+                    "E) Compressor Air Start"
+                ],
+                correct: 1,
+                rationale: "O guindaste de manutenção é uma estrutura robusta móvel projetada para içamento e remoção segura de motores e hélices (Item 4.2.1 - Fotos)."
+            },
+            {
+                id: 48,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Em relação ao termo 'Item' no SILOMS, é CORRETO afirmar que:",
+                options: [
+                    "A) Refere-se exclusivamente a aviões completos.",
+                    "B) É um termo genérico que define um todo: equipamento, conjunto, peça ou material.",
+                    "C) Significa peças descartáveis sem código P/N.",
+                    "D) É a denominação dada a ferramentas danificadas.",
+                    "E) Equivale ao número de protocolo de ofícios."
+                ],
+                correct: 1,
+                rationale: "Item no SILOMS é a definição genérica que abrange um equipamento, conjunto, peça, material ou assunto cadastrado (Item 4.1.2)."
+            },
+            {
+                id: 49,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "A inspeção rápida visual efetuada pelo operador antes de dar partida ao equipamento para checar vazamentos e calibragem é a:",
+                options: [
+                    "A) Revisão Geral (Overhaul)",
+                    "B) Inspeção Pré-Voo / Pré-Uso",
+                    "C) Manutenção Corretiva Profunda",
+                    "D) Análise de Óleo por Espectrometria",
+                    "E) Medição de Isolamento Dielétrico"
+                ],
+                correct: 1,
+                rationale: "A Inspeção Pré-Voo / Pré-Uso consiste na verificação física rápida realizada antes do emprego para garantir condições de operação (Item 4.1.2)."
+            },
+            {
+                id: 50,
+                module: 2,
+                moduleTitle: "Módulo II - Logística, Manutenção e Eletricidade",
+                question: "Para elevar individualmente cada perna de força do trem de pouso de uma aeronave a fim de trocar um pneu gastou, emprega-se o:",
+                options: [
+                    "A) Macaco tripé de grande porte",
+                    "B) Macaco de troca de rodas",
+                    "C) Guindaste hidráulico de hangar",
+                    "D) Trator pushback",
+                    "E) Carro de ferramentas"
+                ],
+                correct: 1,
+                rationale: "O macaco de troca de rodas é um dispositivo compacto para elevação individual da perna de força do trem de pouso (Item 4.2.1 - Fotos)."
+            },
+
+            // ==================== MÓDULO III (51 - 75) ====================
+            {
+                id: 51,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Na manutenção automotiva militar, qual modalidade utiliza ferramentas de diagnóstico e análise contínua (ex: análise de óleo e vibração) para antever a vida útil do componente?",
+                options: [
+                    "A) Manutenção Corretiva Reativa",
+                    "B) Manutenção Preventiva por Quilometragem",
+                    "C) Manutenção Preditiva",
+                    "D) Substituição Empírica",
+                    "E) Reforma de Carroceria"
+                ],
+                correct: 2,
+                rationale: "A Manutenção Preditiva monitora parâmetros físicos e operacionais contínuos para antever falhas e intervir no momento exato (Item 5.1)."
+            },
+            {
+                id: 52,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Durante a verificação diária do nível de óleo lubrificante do motor de uma viatura, o procedimento correto exige:",
+                options: [
+                    "A) Motor funcionando em alta rotação.",
+                    "B) Veículo nivelado horizontalmente com motor desligado há tempo suficiente para o óleo descer ao cárter.",
+                    "C) Veículo estacionado em aclive acentuado.",
+                    "D) Vareta inserida apenas até a metade do curso.",
+                    "E) Adição de água caso o óleo esteja no nível mínimo."
+                ],
+                correct: 1,
+                rationale: "A medição do óleo deve ocorrer com a viatura nivelada e o motor desligado há tempo suficiente para estabilizar o lubrificante no cárter (Item 5.1.1)."
+            },
+            {
+                id: 53,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual cuidado imediato evita acidentes com queimaduras graves ao verificar o fluido de arrefecimento de uma viatura aquecida?",
+                options: [
+                    "A) Abrir a tampa de pressão do radiador rapidamente com a mão nua.",
+                    "B) Conferir o nível pelo reservatório plástico transparente sem remover a tampa pressurizada do radiador quente.",
+                    "C) Adicionar água gelada diretamente no motor em funcionamento.",
+                    "D) Retirar a correia do alternador antes da inspeção.",
+                    "E) Esvaziar todo o fluido pelo dreno inferior."
+                ],
+                correct: 1,
+                rationale: "A inspeção deve ser feita visualmente no reservatório de expansão, evitando a abertura da tampa do radiador aquecido sob pressão de vapor (Item 5.1.1)."
+            },
+            {
+                id: 54,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual sigla gravada na banda de rodagem dos pneus indica a localização do limite legal de desgaste dos sulcos?",
+                options: [
+                    "A) ABS",
+                    "B) TWI (Tread Wear Indicator)",
+                    "C) DOT",
+                    "D) SILOMS",
+                    "E) RPM"
+                ],
+                correct: 1,
+                rationale: "O TWI (Tread Wear Indicator) é o indicador ressaltado nos sulcos do pneu que aponta o limite máximo de desgaste da borracha (Item 5.1.1)."
+            },
+            {
+                id: 55,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "No procedimento seguro de substituição de pneu avariado na via pública, a primeira folga (alívio inicial) no torque das porcas de roda deve ocorrer:",
+                options: [
+                    "A) Com o veículo totalmente suspenso pelo macaco no ar.",
+                    "B) Com a viatura ainda assentada firmemente ao solo.",
+                    "C) Após retirar completamente o macaco.",
+                    "D) Com o motor ligado em marcha ré.",
+                    "E) Somente após lubrificar os prisioneiros com graxa."
+                ],
+                correct: 1,
+                rationale: "O alívio inicial do torque das porcas deve ser executado com o veículo ainda assentado no solo para evitar instabilidade no macaco (Item 5.1.2)."
+            },
+            {
+                id: 56,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Na partida assistida com bateria auxiliar (jump-start), a conexão da garra do cabo negativo (preto) na viatura SOCORRIDA deve ser feita:",
+                options: [
+                    "A) Direta e obrigatoriamente no polo negativo da bateria descarregada.",
+                    "B) No polo positivo da bateria doadora.",
+                    "C) Em um ponto sólido de massa metálica não pintada do bloco do motor.",
+                    "D) No tubo de escapamento de gases.",
+                    "E) No terminal da vela de ignição."
+                ],
+                correct: 2,
+                rationale: "O cabo negativo final deve ser conectado a um ponto de massa metálica do bloco para evitar faíscas próximas aos gases explosivos de hidrogênio da bateria (Item 5.1.2)."
+            },
+            {
+                id: 57,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "O revestimento por pintura nas superfícies dos meios operacionais da FAB cumpre duas funções fundamentais:",
+                options: [
+                    "A) Térmica e magnética.",
+                    "B) Protetora (barreira contra corrosão) e decorativa/tática (camuflagem e identificação).",
+                    "C) Lubrificante e impermeabilizante de combustível.",
+                    "D) Isolante acústico e condutora de eletricidade.",
+                    "E) Refletora de radar e bactericida."
+                ],
+                correct: 1,
+                rationale: "A pintura cumpre finalidade protetora (isolamento contra intempéries e corrosão) e tática/decorativa (padronização e camuflagem - Item 5.2)."
+            },
+            {
+                id: 58,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual método de pintura é caracterizado pela aplicação de tinta em pó seguida de cura térmica em estufa, ideal para peças sujeitas a vibrações severas?",
+                options: [
+                    "A) Trincha manual",
+                    "B) Pistola pneumática convencional",
+                    "C) Pintura Eletrostática a Pó",
+                    "D) Polimento abrasivo",
+                    "E) Imersão simples"
+                ],
+                correct: 2,
+                rationale: "A pintura eletrostática a pó oferece excelente aderência e resistência mecânica para componentes sujeitos a vibração extrema (Item 5.2)."
+            },
+            {
+                id: 59,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Diferenciando os conceitos de corrosão e erosão em estruturas metálicas, a EROSÃO é corretamente definida como:",
+                options: [
+                    "A) Degradação eletroquímica com perda de elétrons no anodo.",
+                    "B) Desgaste estritamente mecânico e físico provocado por atrito dinâmico de partículas ou fluidos.",
+                    "C) Formação de película passivadora de óxido de alumínio.",
+                    "D) Reação química entre ácido e base no eletrólito.",
+                    "E) Craqueamento térmico do polímero."
+                ],
+                correct: 1,
+                rationale: "Erosão é o desgaste puramente mecânico/físico provocado pelo atrito direto de partículas ou fluidos em velocidade (Item 5.3.1)."
+            },
+            {
+                id: 60,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Para que ocorra uma célula de corrosão eletroquímica galvânica, é indispensável a coexistência simultânea de quatro elementos:",
+                options: [
+                    "A) Oxigênio, Nitrogênio, Cobre e Calor.",
+                    "B) Anodo, Cátodo, Condutor Metálico e Eletrólito.",
+                    "C) Tintas, Solventes, Verniz e Óleo.",
+                    "D) Ferro, Alumínio, Graxa e Borracha.",
+                    "E) Ácido, Solda, Bateria e Fusível."
+                ],
+                correct: 1,
+                rationale: "Os 4 elementos vitais da célula de corrosão são: Área Anódica, Área Catódica, Condutor Metálico e Eletrólito (Item 5.3.1)."
+            },
+            {
+                id: 61,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Na célula eletroquímica de corrosão, a região metálica onde ocorre a oxidação com perda de elétrons e dissolução de íons é o:",
+                options: [
+                    "A) Cátodo",
+                    "B) Anodo",
+                    "C) Eletrólito",
+                    "D) Dielétrico",
+                    "E) Neutro"
+                ],
+                correct: 1,
+                rationale: "O Ânodo é a região de menor potencial onde ocorre a reação de oxidação forçada com degradação do metal (Item 5.3.1)."
+            },
+            {
+                id: 62,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Segundo o estudo internacional de referência NACE IMPACT (2016), qual é a estimativa do custo global anual provocado pela corrosão nos materiais?",
+                options: [
+                    "A) US$ 100 milhões",
+                    "B) US$ 1 bilhão",
+                    "C) US$ 500 bilhões",
+                    "D) US$ 2,5 trilhões (equivalente a ~3,4% do PIB mundial)",
+                    "E) US$ 10 trilhões"
+                ],
+                correct: 3,
+                rationale: "O estudo NACE IMPACT (2016) aponta que o custo global da corrosão atinge cerca de US$ 2,5 trilhões anuais (3,4% do PIB mundial - Item 5.3.2)."
+            },
+            {
+                id: 63,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual publicação técnica do SISMA possui cumprimento COMPULSÓRIO e imediato para orientar inspeções e modificações em aeronaves e equipamentos?",
+                options: [
+                    "A) Publicação Administrativa (PA)",
+                    "B) Ordem Técnica (OT)",
+                    "C) Diretiva de Pessoal",
+                    "D) Manual de Redação",
+                    "E) Boletim Interno de Notícias"
+                ],
+                correct: 1,
+                rationale: "Ordem Técnica (OT) é a publicação técnica de cumprimento compulsório emitida no âmbito do SISMA para padronizar procedimentos (Item 5.4.1)."
+            },
+            {
+                id: 64,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Como se classifica a publicação formal que possui caráter essencialmente administrativo, diretivo, doutrinário ou disciplinar no COMAER?",
+                options: [
+                    "A) Ordem Técnica (OT)",
+                    "B) Diretiva Técnica (DT)",
+                    "C) Publicação Administrativa (PA)",
+                    "D) Part Number (P/N)",
+                    "E) Laudo de Perícia"
+                ],
+                correct: 2,
+                rationale: "A Publicação Administrativa (PA) rege o fluxo normativo e processual de caráter administrativo na instituição (Item 5.4.1)."
+            },
+            {
+                id: 65,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "A sigla SSS empregada no controle de estoque de materiais logísticos de segurança e salvamento da Aeronáutica significa:",
+                options: [
+                    "A) Sistema Semanal de Suprimento",
+                    "B) Suprimento Sensível ou Sobressalente Especial (Safety, Security and Sensitive)",
+                    "C) Seção de Serviço Social",
+                    "D) Soldagem e Suporte de Estruturas",
+                    "E) Serviço de Socorro Sanitário"
+                ],
+                correct: 1,
+                rationale: "SSS refere-se a Suprimento Sensível ou Sobressalente Especial (Safety, Security and Sensitive material), sob rígido controle (Item 2 Glossário & 5.4.2)."
+            },
+            {
+                id: 66,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "No CDCP e na Seção de Equipamentos de Voo (BEV), a ETIQUETA VERDE fixada em um componente atesta que o material está:",
+                options: [
+                    "A) Condenado e irrecuperável.",
+                    "B) Avariado aguardando revisão.",
+                    "C) Perfeito, revisado e pronto para uso operacional imediato.",
+                    "D) Em processo de destruição em prensa.",
+                    "E) Classificado como ultrassecreto."
+                ],
+                correct: 2,
+                rationale: "A Etiqueta Verde identifica material perfeito, revisado e pronto para aplicação imediata nos vetores (Item 5.4.2)."
+            },
+            {
+                id: 67,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual cor de etiqueta do SISMA indica que o sobressalente está AVARIADO e necessita de reparo ou revisão técnica antes do uso?",
+                options: [
+                    "A) Verde",
+                    "B) Amarela",
+                    "C) Vermelha",
+                    "D) Azul",
+                    "E) Branca"
+                ],
+                correct: 1,
+                rationale: "A Etiqueta Amarela identifica material avariado que exige intervenção corretiva ou revisão antes do emprego (Item 5.4.2)."
+            },
+            {
+                id: 68,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Peças condenadas formalmente ou inservíveis que devem ser alienadas ou destruídas recebem obrigatoriamente a etiqueta de cor:",
+                options: [
+                    "A) Verde",
+                    "B) Amarela",
+                    "C) Vermelha",
+                    "D) Cinza",
+                    "E) Preta"
+                ],
+                correct: 2,
+                rationale: "A Etiqueta Vermelha identifica material formalmente condenado e irrecuperável (Item 5.4.2)."
+            },
+            {
+                id: 69,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Em caso de constatação de extravio de material SSS (Segurança e Salvamento) no armazém da OM, qual medida administrativa é compulsória?",
+                options: [
+                    "A) Substituição silenciosa da peça por outra da prateleira.",
+                    "B) Notificação formal e abertura imediata de Sindicância ou IPM para apurar responsabilidades.",
+                    "C) Descarte das etiquetas vermelhas no lixo comum.",
+                    "D) Baixa no SILOMS como material consumível sem aviso.",
+                    "E) Alteração manual do Part Number no inventário."
+                ],
+                correct: 1,
+                rationale: "O extravio de item SSS impõe notificação formal ao Comando e instauração de Sindicância ou Inquérito Policial Militar (IPM) (Item 5.4.2)."
+            },
+            {
+                id: 70,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "A publicação emitida pelo órgão regulador (DIRMAB/DIRENS) com objetivo de prevenir ou corrigir falhas em sistemas de aeronaves é a:",
+                options: [
+                    "A) Diretiva Técnica (DT)",
+                    "B) Ordem de Serviço (OS)",
+                    "C) Nota Fiscal Eletrônica",
+                    "D) Ficha de Registro de Voo",
+                    "E) Guia de Tramitação Geral"
+                ],
+                correct: 0,
+                rationale: "A Diretiva Técnica (DT) é a publicação técnica editada pelo órgão regulador para prevenir, corrigir ou melhorar componentes (Item 5.4.1)."
+            },
+            {
+                id: 71,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual setor funciona como o núcleo operacional da cadeia de custódia de suprimentos de materiais e sobressalentes na OM?",
+                options: [
+                    "A) SIGADAER",
+                    "B) CDCP (Centro de Distribuição e Controle de Peças)",
+                    "C) CEMAL",
+                    "D) Subseção de Relações Públicas",
+                    "E) Rancho dos Soldados"
+                ],
+                correct: 1,
+                rationale: "O CDCP atua como o núcleo operacional da cadeia de custódia de suprimentos na Organização Militar (Item 5.4.2)."
+            },
+            {
+                id: 72,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Qual o limite de economia global anual estimado pela NACE caso haja aplicação rigorosa de técnicas de prevenção da corrosão?",
+                options: [
+                    "A) Entre 1% e 2%",
+                    "B) Entre 5% e 10%",
+                    "C) Entre 15% e 35%",
+                    "D) Exatamente 80%",
+                    "E) 100% de eliminação de custos"
+                ],
+                correct: 2,
+                rationale: "A aplicação de tecnologias anticorrosivas pode gerar economias de 15% a 35% do custo global da corrosão (Item 5.3.2)."
+            },
+            {
+                id: 73,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "Na manutenção de viaturas militares, a verificação da integridade das correias, filtros e fluidos em intervalos regulares previstos é exemplo de:",
+                options: [
+                    "A) Manutenção Preventiva",
+                    "B) Manutenção Corretiva",
+                    "C) Manutenção de Emergência",
+                    "D) Recuperação Estrutural",
+                    "E) Canibalização Forçada"
+                ],
+                correct: 0,
+                rationale: "Substituição periódica planejada de filtros e fluidos é a essência da Manutenção Preventiva (Item 5.1)."
+            },
+            {
+                id: 74,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "A aplicação manual de pintura com uso de rolos e trinchas na FAB é restrita a:",
+                options: [
+                    "A) Camuflagem total de caças de combate.",
+                    "B) Pequeños retoques localizados em áreas de não conformidade.",
+                    "C) Revestimento interno de tanques de combustível.",
+                    "D) Pintura de fuselagem de grande porte.",
+                    "E) Aplicação de verniz eletrostático."
+                ],
+                correct: 1,
+                rationale: "O uso manual de trinchas e rolos é restrito a pequenos retoques localizados em áreas limitadas (Item 5.2)."
+            },
+            {
+                id: 75,
+                module: 3,
+                moduleTitle: "Módulo III - Mecânica, Pintura e Logística",
+                question: "A área da célula corrosiva em que os elétrons liberados são consumidos por reações de redução do meio é o:",
+                options: [
+                    "A) Anodo",
+                    "B) Cátodo",
+                    "C) Mordente",
+                    "D) Cárter",
+                    "E) Fusor"
+                ],
+                correct: 1,
+                rationale: "O Cátodo é a área de maior potencial eletroquímico onde os elétrons liberados pelo anodo são consumidos por redução (Item 5.3.1)."
+            },
+
+            // ==================== MÓDULO IV (76 - 100) ====================
+            {
+                id: 76,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Qual elo da cadeia asséptica consiste no processo físico ou químico que assegura a COMPLETA eliminação de todas as formas de vida microbiana, inclusive os esporos bacterianos?",
+                options: [
+                    "A) Desinfecção de nível intermediário",
+                    "B) Antissepsia",
+                    "C) Esterilização",
+                    "D) Limpeza mecânica",
+                    "E) Degermação"
+                ],
+                correct: 2,
+                rationale: "Esterilização é o processo que elimina todas as formas de vida microbiana, incluindo esporos (Item 6.1.1)."
+            },
+            {
+                id: 77,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Segundo a classificação de Spaulding, artigos hospitalares que entram em contato direto com tecidos estéreis ou com o sistema vascular são considerados:",
+                options: [
+                    "A) Artigos Não Críticos",
+                    "B) Artigos Semicríticos",
+                    "C) Artigos Críticos (exigem esterilização obrigatória)",
+                    "D) Resíduos Grupo D",
+                    "E) Artigos Comuns"
+                ],
+                correct: 2,
+                rationale: "Artigos Críticos contatam tecidos estéreis ou vascularização, exigindo esterilização compulsória (ex: bisturis e agulhas - Item 6.1.2)."
+            },
+            {
+                id: 78,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Termômetros clínicos, macas e manguitos de pressão arterial que entram em contato apenas com a pele intacta do paciente são classificados como:",
+                options: [
+                    "A) Artigos Críticos",
+                    "B) Artigos Semicríticos",
+                    "C) Artigos Não Críticos",
+                    "D) Artigos Pérvios",
+                    "E) Matéria Infectante A1"
+                ],
+                correct: 2,
+                rationale: "Artigos Não Críticos contatam apenas a pele íntegra do paciente, exigindo limpeza ou desinfecção de nível intermediário/baixo (Item 6.1.2)."
+            },
+            {
+                id: 79,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "De acordo com o protocolo da OMS/ANVISA, qual dos momentos abaixo NÃO integra a lista oficial dos 5 Momentos da Higienização das Mãos?",
+                options: [
+                    "A) Antes de tocar o paciente.",
+                    "B) Antes de realizar procedimento limpo/asséptico.",
+                    "C) Após o risco de exposição a fluidos corporais.",
+                    "D) Imediatamente após colocar a farda militar no alojamento.",
+                    "E) Após tocar superfícies próximas ao paciente."
+                ],
+                correct: 3,
+                rationale: "Os 5 momentos focam o contato assistencial: 1. Antes de tocar o paciente; 2. Antes de procedimento limpo; 3. Após fluido corporal; 4. Após tocar o paciente; 5. Após tocar superfícies próximas (Item 6.1.3)."
+            },
+            {
+                id: 80,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Em procedimentos de saúde geradores de aerossóis (como intubação traqueal e aspiração de vias aéreas), é obrigatório o uso de qual EPI respiratório específico?",
+                options: [
+                    "A) Máscara cirúrgica de papel simples",
+                    "B) Máscara de proteção respiratória PFF2 / N95",
+                    "C) Máscara com filtro químico para vapores",
+                    "D) Tecido de algodão comum",
+                    "E) Protetor labial isolante"
+                ],
+                correct: 1,
+                rationale: "A máscara PFF2/N95 é obrigatória para proteção contra aerossóis biológicos suspensos no ar (Item 6.1.4)."
+            },
+            {
+                id: 81,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Quais vacinas são formalmente exigidas/recomendadas pelo PNI para imunização ocupacional dos profissionais de saúde da FAB?",
+                options: [
+                    "A) Apenas Febre Amarela.",
+                    "B) Hepatite B (3 doses com anti-HBs) e Tétano/Difteria (dT).",
+                    "C) Antirrábica e Dengue exclusivamente.",
+                    "D) Rotavírus e BCG de reforço adulto.",
+                    "E) Nenhuma vacina é exigida pela administração."
+                ],
+                correct: 1,
+                rationale: "Hepatite B e Tétano/Difteria (dT) constituem o esquema de imunização ocupacional prioritário no ambiente de saúde (Item 6.1.4)."
+            },
+            {
+                id: 82,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Na esterilização por calor úmido sob pressão em autoclave, o ciclo padrão operado a 121 °C exige tempo mínimo de exposição contínua de:",
+                options: [
+                    "A) 1 a 2 minutos",
+                    "B) 15 a 30 minutos",
+                    "C) 2 horas consecutivas",
+                    "D) 12 horas",
+                    "E) 45 segundos"
+                ],
+                correct: 1,
+                rationale: "O ciclo a 121 °C em autoclave exige de 15 a 30 minutos sob vapor saturado para garantir esterilização (Item 6.1.5)."
+            },
+            {
+                id: 83,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Segundo a Resolução RDC nº 222/2018 da ANVISA, os resíduos biológicos com presença de agentes patogênicos (Grupo A) devem ser descartados em:",
+                options: [
+                    "A) Sacos plásticos brancos leitosos com símbolo internacional de risco biológico.",
+                    "B) Caixas de papelão amarelas Descarpack.",
+                    "C) Sacos plásticos pretos de lixo comum.",
+                    "D) Recipientes blindados de chumbo.",
+                    "E) Galões de plástico transparente."
+                ],
+                correct: 0,
+                rationale: "O Grupo A (infectantes) exige descarte em sacos brancos leitosos com símbolo de risco biológico (Item 6.1.6)."
+            },
+            {
+                id: 84,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "O descarte de materiais perfurocortantes (Grupo E - agulhas, lâminas e escalpes) deve ser interrompido compulsoriamente quando o recipiente rígido atingir:",
+                options: [
+                    "A) Transbordamento completo da tampa.",
+                    "B) Metade da capacidade (1/2).",
+                    "C) A linha pontilhada de limite máximo de enchimento (3/4 da capacidade).",
+                    "D) 100% do volume com compactação manual.",
+                    "E) Qualquer peso acima de 10 kg."
+                ],
+                correct: 2,
+                rationale: "O descarte deve ser interrompido ao atingir a linha limite de 3/4 da capacidade da caixa rígida (Item 6.1.6)."
+            },
+            {
+                id: 85,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Qual conduta imediata NUNCA deve ser realizada em caso de acidente ocupacional com perfurocortante contaminado por sangue?",
+                options: [
+                    "A) Lavar a área com água e sabão neutro.",
+                    "B) Espremer ou friccionar a lesão com substâncias cáusticas/alvejantes.",
+                    "C) Notificar a chefia e emitir Comunicação de Acidente.",
+                    "D) Coletar sorologia do acidentado para HIV e Hepatites.",
+                    "E) Encaminhar para avaliação médica para PEP."
+                ],
+                correct: 1,
+                rationale: "NUNCA se deve espremer a lesão ou aplicar produtos cáusticos/irritantes no local do ferimento (Item 6.1.7)."
+            },
+            {
+                id: 86,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "A profilaxia medicamentosa recomendada para prevenir a infecção pelo HIV após exposição a material biológico de risco é conhecida pela sigla:",
+                options: [
+                    "A) SILOMS",
+                    "B) PEP (Profilaxia Pós-Exposição)",
+                    "C) SAMU",
+                    "D) DEA",
+                    "E) TWI"
+                ],
+                correct: 1,
+                rationale: "PEP é a Profilaxia Pós-Exposição, protocolada com antirretrovirais (Item 6.1.7)."
+            },
+            {
+                id: 87,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "As quatro funções sociomédicas fundamentais de um hospital moderno estabelecidas pela OMS são:",
+                options: [
+                    "A) Limpeza, Segurança, Transporte e Alimentação.",
+                    "B) Restaurativa, Preventiva, Educativa e Pesquisadora.",
+                    "C) Administrativa, Financeira, Jurídica e Operacional.",
+                    "D) Triagem, Internação, Cirurgia e Necrópsia.",
+                    "E) Atendimento, Cobrança, Auditoria e Compra."
+                ],
+                correct: 1,
+                rationale: "As 4 funções hospitalares da OMS são: Restaurativa, Preventiva, Educativa e Pesquisadora (Item 6.2.1)."
+            },
+            {
+                id: 88,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Qual modalidade de preparo de leito destina-se a receber o paciente pós-anestesiado sem travesseiro, com as roupas dobradas no lado oposto à entrada da maca?",
+                options: [
+                    "A) Cama Fechada",
+                    "B) Cama Aberta",
+                    "C) Cama de Acamado",
+                    "D) Cama de Operado",
+                    "E) Cama de Triagem"
+                ],
+                correct: 3,
+                rationale: "A Cama de Operado é preparada especificamente para o retorno cirúrgico, facilitando a transferência segura sem atrito (Item 6.2.2)."
+            },
+            {
+                id: 89,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "A sigla técnica correta e padronizada em serviços de saúde para identificar os parâmetros vitais (temperatura, pulso, respiração e pressão) é:",
+                options: [
+                    "A) SST",
+                    "B) SV (Sinais Vitais)",
+                    "C) PNI",
+                    "D) ECG",
+                    "E) RDC"
+                ],
+                correct: 1,
+                rationale: "A sigla padronizada é SV (Sinais Vitais). O uso de SST é incorreto, pois se refere à Saúde e Segurança do Trabalho (Item 6.2.3)."
+            },
+            {
+                id: 90,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Em um adulto em repouso, a frequência cardíaca (pulso) dentro dos limites da NORMOCARDIA situa-se entre:",
+                options: [
+                    "A) 30 a 50 bpm",
+                    "B) 60 a 100 bpm",
+                    "C) 110 a 150 bpm",
+                    "D) 160 a 200 bpm",
+                    "E) 12 a 20 bpm"
+                ],
+                correct: 1,
+                rationale: "Normocardia em adultos corresponde a 60 a 100 batimentos por minuto (bpm) (Item 6.2.3 - Tabela)."
+            },
+            {
+                id: 91,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "A frequência respiratória normal (Eupneia) em um adulto saudável em repouso varia entre:",
+                options: [
+                    "A) 5 a 8 irpm",
+                    "B) 12 a 20 incursões respiratórias por minuto (irpm)",
+                    "C) 30 a 40 irpm",
+                    "D) 50 a 60 irpm",
+                    "E) 80 a 100 irpm"
+                ],
+                correct: 1,
+                rationale: "Eupneia (respiração normal) varia de 12 a 20 irpm em adultos (Item 6.2.3 - Tabela)."
+            },
+            {
+                id: 92,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "De acordo com as diretrizes vigentes da American Heart Association (AHA), a taxa de compressão torácica recomendada na RCP de adultos é de:",
+                options: [
+                    "A) Exatamente 60 compressões por minuto.",
+                    "B) 100 a 120 compressões por minuto (com profundidade de 5 a 6 cm).",
+                    "C) 150 a 180 compressões por minuto.",
+                    "D) 30 compressões por hora.",
+                    "E) 200 compressões contínuas sem pausa."
+                ],
+                correct: 1,
+                rationale: "A diretriz AHA preconiza a taxa contínua de 100 a 120 compressões/minuto e profundidade de 5 a 6 cm (Item 6.3.2)."
+            },
+            {
+                id: 93,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Na RCP de adulto com dispositivo de barreira, qual é a proporção padronizada entre compressões e ventilações de resgate?",
+                options: [
+                    "A) 15 compressões para 2 ventilações (15:2)",
+                    "B) 30 compressões para 2 ventilações (30:2)",
+                    "C) 50 compressões para 5 ventilações (50:5)",
+                    "D) 5 compressões para 1 ventilação (5:1)",
+                    "E) 100 compressões para 10 ventilações"
+                ],
+                correct: 1,
+                rationale: "A proporção padrão é de 30 compressões para 2 ventilações (30:2) (Item 6.3.2)."
+            },
+            {
+                id: 94,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Em caso de hemorragia arterial grave com sangue em jatos pulsáteis nos membros, refratária à compressão direta, é obrigatório aplicar:",
+                options: [
+                    "A) Garrote de borracha de soro.",
+                    "B) Torniquete Tático posicionado 5 a 7 cm acima da lesão (anotando a hora).",
+                    "C) Pomada cicatrizante e gelo direto.",
+                    "D) Algodão seco dentro da ferida.",
+                    "E) Flexão forçada do membro sem curativo."
+                ],
+                correct: 1,
+                rationale: "Aplica-se o Torniquete Tático 5 a 7 cm acima da lesão em sangramentos exanguinantes de membros, registrando o horário de oclusão (Item 6.3.3)."
+            },
+            {
+                id: 95,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Qual curativo específico é recomendado no Atendimento Pré-Hospitalar para selar ferimentos torácicos aspirativos (pneumotórax aberto)?",
+                options: [
+                    "A) Curativo compressivo total em 4 bordas.",
+                    "B) Curativo de Três Pontas (atua como válvula de alívio).",
+                    "C) Atadura gessada estática.",
+                    "D) Gaze seca solta.",
+                    "E) Esparadrapo transparente sem folga."
+                ],
+                correct: 1,
+                rationale: "O curativo de três pontas veda 3 bordas deixando 1 livre, permitindo a saída do ar acumulado e impedindo sua entrada na inspiração (Item 6.3.4)."
+            },
+            {
+                id: 96,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Em caso de evisceração abdominal pós-traumática, a conduta correta de primeiro socorro exige:",
+                options: [
+                    "A) Reintroduzir imediatamente as alças intestinais expostas na cavidade.",
+                    "B) Não reintroduzir os órgãos; cobrir com compressas estéreis umedecidas e filme plástico.",
+                    "C) Oferecer água gelada para o paciente beber.",
+                    "D) Lavar os órgãos com álcool 70%.",
+                    "E) Manter a vítima em pé deambulando."
+                ],
+                correct: 1,
+                rationale: "NUNCA se deve reintroduzir órgãos expostos. Deve-se cobri-los com compressas estéreis umedecidas e filme plástico para evitar dessecação (Item 6.3.4)."
+            },
+            {
+                id: 97,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "Uma queimadura caracterizada por acometimento integral da pele, coloração esbranquiçada/carbonizada e AUSÊNCIA DE DOR LOCAL devido à destruição das terminações nervosas é de:",
+                options: [
+                    "A) 1º Grau",
+                    "B) 2º Grau",
+                    "C) 3º Grau",
+                    "D) Grau Térmico Leve",
+                    "E) Flictena simples"
+                ],
+                correct: 2,
+                rationale: "A queimadura de 3º Grau destrói a espessura total da pele e nervos, resultando em insensibilidade tátil local (ausência de dor local - Item 6.3.5)."
+            },
+            {
+                id: 98,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "De acordo com Clauss Möller, a virtude profissional que consiste na capacidade de antever demandas funcionais e agir de modo produtivo sem necessidade de ordem superior formal é a:",
+                options: [
+                    "A) Responsabilidade",
+                    "B) Lealdade",
+                    "C) Iniciativa",
+                    "D) Subserviência",
+                    "E) Cordialidade"
+                ],
+                correct: 2,
+                rationale: "Iniciativa é a virtude de antever necessidades e agir de forma oportuna e produtiva dentro dos limites regulamentares (Item 6.4.1)."
+            },
+            {
+                id: 99,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "A virtude de Clauss Möller que traduz o comprometimento inegociável do militar com os resultados de seus atos e com a custódia do patrimônio público é a:",
+                options: [
+                    "A) Responsabilidade",
+                    "B) Lealdade",
+                    "C) Iniciativa",
+                    "D) Imparcialidade",
+                    "E) Vaidade"
+                ],
+                correct: 0,
+                rationale: "Responsabilidade é o comprometimento inegociável com o resultado dos atos e zelo pelo patrimônio confiado (Item 6.4.1)."
+            },
+            {
+                id: 100,
+                module: 4,
+                moduleTitle: "Módulo IV - Saúde, Biossegurança e Ética",
+                question: "A virtude de Clauss Möller que representa a fidelidade moral expressa para com a Força Aérea Brasileira, seus chefes e seus pares é a:",
+                options: [
+                    "A) Iniciativa",
+                    "B) Responsabilidade",
+                    "C) Lealdade",
+                    "D) Audácia",
+                    "E) Imprudência"
+                ],
+                correct: 2,
+                rationale: "Lealdade é a fidelidade moral para com a instituição FAB, superiores e companheiros de farda (Item 6.4.1)."
+            }
+        ];
+
+        // State Management
+        let currentIndex = 0;
+        let filteredQuestions = [...questionsData];
+        let userAnswers = {}; // { questionId: chosenIndex }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGrid();
+            loadQuestion(0);
+            updateStats();
+        });
+
+        // Filter Questions by Module
+        function filterModule(mod) {
+            // Update filter button UI
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.mod == mod) {
+                    btn.classList.add('bg-fab-sky', 'text-white');
+                    btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                } else {
+                    btn.classList.remove('bg-fab-sky', 'text-white');
+                    btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+                }
+            });
+
+            if (mod === 'ALL') {
+                filteredQuestions = [...questionsData];
+            } else {
+                filteredQuestions = questionsData.filter(q => q.module === parseInt(mod));
+            }
+
+            document.getElementById('nav-count').innerText = `${filteredQuestions.length} questões`;
+            renderGrid();
+            loadQuestion(0);
+        }
+
+        // Render Navigation Grid
+        function renderGrid() {
+            const grid = document.getElementById('questions-grid');
+            grid.innerHTML = '';
+
+            filteredQuestions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `h-9 rounded-lg text-xs font-bold transition flex items-center justify-center border ${getGridBtnStyle(q.id, idx)}`;
+                btn.innerText = q.id;
+                btn.onclick = () => loadQuestion(idx);
+                grid.appendChild(btn);
+            });
+        }
+
+        function getGridBtnStyle(qId, idx) {
+            const isCurrent = idx === currentIndex;
+            const answered = userAnswers.hasOwnProperty(qId);
+            
+            if (isCurrent) {
+                return 'border-fab-sky ring-2 ring-fab-sky ring-offset-1 text-fab-sky bg-sky-50 font-extrabold';
+            }
+            if (answered) {
+                const isCorrect = userAnswers[qId] === questionsData.find(item => item.id === qId).correct;
+                return isCorrect ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300';
+            }
+            return 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100';
+        }
+
+        // Load Question Data
+        function loadQuestion(index) {
+            if (index < 0 || index >= filteredQuestions.length) return;
+            
+            currentIndex = index;
+            const q = filteredQuestions[currentIndex];
+            const answered = userAnswers.hasOwnProperty(q.id);
+            const selectedOpt = userAnswers[q.id];
+
+            // UI Elements Update
+            document.getElementById('q-badge').innerText = `Questão ${q.id}`;
+            document.getElementById('q-module').innerText = q.moduleTitle;
+            document.getElementById('q-text').innerText = q.question;
+            document.getElementById('pagination-text').innerText = `${currentIndex + 1} de ${filteredQuestions.length}`;
+
+            // Status Badge
+            const statusBadge = document.getElementById('q-status-badge');
+            if (answered) {
+                const isCorrect = selectedOpt === q.correct;
+                statusBadge.className = `text-xs font-semibold px-2.5 py-1 rounded-md ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+                statusBadge.innerText = isCorrect ? 'Respondida (Correta)' : 'Respondida (Incorreta)';
+            } else {
+                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 text-slate-500';
+                statusBadge.innerText = 'Pendente';
+            }
+
+            // Render Options
+            const optionsContainer = document.getElementById('q-options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((optText, optIdx) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = `w-full text-left p-4 rounded-xl text-sm transition border flex items-start justify-between gap-3 ${getOptionStyle(q, optIdx)}`;
+                
+                optBtn.innerHTML = `
+                    <span class="flex-1">${optText}</span>
+                    ${getOptionIcon(q, optIdx)}
+                `;
+
+                if (!answered) {
+                    optBtn.onclick = () => selectOption(q.id, optIdx);
+                } else {
+                    optBtn.disabled = true;
+                }
+
+                optionsContainer.appendChild(optBtn);
+            });
+
+            // Feedback Rationale Box
+            const feedbackBox = document.getElementById('q-feedback');
+            if (answered) {
+                feedbackBox.classList.remove('hidden');
+                const isCorrect = selectedOpt === q.correct;
+                
+                feedbackBox.className = `p-5 rounded-xl border transition-all duration-300 mb-6 ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+                
+                document.getElementById('feedback-title').className = `flex items-center gap-2 font-bold text-sm mb-1 ${isCorrect ? 'text-green-800' : 'text-red-800'}`;
+                document.getElementById('feedback-title').innerHTML = isCorrect ? 
+                    `<svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Resposta Correta!` :
+                    `<svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg> Resposta Incorreta`;
+
+                document.getElementById('feedback-explanation').innerText = q.rationale;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Buttons state
+            document.getElementById('btn-prev').disabled = currentIndex === 0;
+            document.getElementById('btn-prev').style.opacity = currentIndex === 0 ? '0.5' : '1';
+            
+            document.getElementById('btn-next').disabled = currentIndex === filteredQuestions.length - 1;
+            document.getElementById('btn-next').style.opacity = currentIndex === filteredQuestions.length - 1 ? '0.5' : '1';
+
+            renderGrid();
+        }
+
+        // Option Styling Helper
+        function getOptionStyle(q, optIdx) {
+            const answered = userAnswers.hasOwnProperty(q.id);
+            const selectedOpt = userAnswers[q.id];
+
+            if (!answered) {
+                return 'bg-white border-slate-200 text-slate-700 hover:border-fab-sky hover:bg-sky-50/50 cursor-pointer';
+            }
+
+            if (optIdx === q.correct) {
+                return 'bg-green-50 border-green-500 text-green-900 font-semibold shadow-sm';
+            }
+
+            if (selectedOpt === optIdx && selectedOpt !== q.correct) {
+                return 'bg-red-50 border-red-400 text-red-900 font-medium';
+            }
+
+            return 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
+        }
+
+        function getOptionIcon(q, optIdx) {
+            const answered = userAnswers.hasOwnProperty(q.id);
+            const selectedOpt = userAnswers[q.id];
+
+            if (!answered) return '';
+
+            if (optIdx === q.correct) {
+                return `<svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+            }
+
+            if (selectedOpt === optIdx && selectedOpt !== q.correct) {
+                return `<svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>`;
+            }
+
+            return '';
+        }
+
+        // Handle Option Select
+        function selectOption(qId, optIdx) {
+            userAnswers[qId] = optIdx;
+            updateStats();
+            loadQuestion(currentIndex);
+        }
+
+        // Navigation
+        function navigate(direction) {
+            loadQuestion(currentIndex + direction);
+        }
+
+        // Update Dashboard Statistics
+        function updateStats() {
+            const answeredCount = Object.keys(userAnswers).length;
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            Object.keys(userAnswers).forEach(qId => {
+                const question = questionsData.find(q => q.id === parseInt(qId));
+                if (question && userAnswers[qId] === question.correct) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+            });
+
+            const scorePct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+            document.getElementById('stat-answered').innerText = `${answeredCount}/100`;
+            document.getElementById('stat-correct').innerText = correctCount;
+            document.getElementById('stat-wrong').innerText = wrongCount;
+            document.getElementById('stat-score').innerText = `${scorePct}%`;
+        }
+
+        // Reset Quiz
+        function resetQuiz() {
+            if (confirm("Deseja realmente reiniciar todo o simulado e apagar suas respostas?")) {
+                userAnswers = {};
+                updateStats();
+                loadQuestion(0);
+            }
+        }
+    </script>
+</body>
+</html>
+```eof
+
+
